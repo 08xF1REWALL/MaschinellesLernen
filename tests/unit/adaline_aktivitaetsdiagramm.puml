@@ -1,0 +1,77 @@
+' PlantUML: Java nötig oder VS Code Extension 'PlantUML' (Alt+D)
+' Online: http://www.plantuml.com/plantuml
+
+@startuml
+title Aktivitätsdiagramm – AdalineGD Training (detailliert)
+
+start
+
+partition "Datenvorverarbeitung" {
+  :CSV-Daten laden (Iris)\nURL: UCI Repository;
+  :Spaltennamen zuweisen\n(sepal_length, sepal_width, petal_length, petal_width, class);
+  :Erste 100 Zeilen extrahieren\n(Setosa vs Versicolor);
+  :Features X auswählen\nX = df[["sepal_length", "petal_length"]];
+  :Labels y kodieren\ny = -1 (Setosa), +1 (Versicolor);
+  
+  :Standardisierung vorbereiten;
+  :X_std = copy(X);
+  :Für jedes Feature j:|
+  note right
+    X_std[:, j] = (X[:, j] - μⱼ) / σⱼ
+    μⱼ = Mittelwert, σⱼ = Standardabweichung
+  end note
+  :X_std[:, 0] = (X[:, 0] - mean) / std;
+  :X_std[:, 1] = (X[:, 1] - mean) / std;
+}
+
+:Figure mit 2 Subplots erstellen\nfig, ax = plt.subplots(1, 2);
+
+partition "Training 1: eta = 0.01" {
+  :AdalineGD(eta=0.01, n_iter=10) initialisieren;
+  :random_state setzen (rgen);
+  :Gewichte w_ initialisieren\nw_ ~ N(0, 0.01²), Größe = 1 + n_features;
+  note right
+    w_[0] = Bias
+    w_[1:] = Feature-Gewichte
+  end note
+  :cost_ = [];
+  
+  repeat
+    :z = X_std @ w_[1:] + w_[0]\n(net_input);
+    :ϕ(z) = z\n(lineare Aktivierung);
+    :errors = y - ϕ(z);
+    note right
+      Δw = η · X^T · errors
+      Δb = η · Σ(errors)
+    end note
+    :w_[1:] += eta * X_std.T @ errors;
+    :w_[0] += eta * errors.sum();
+    :cost = Σ(errors²) / 2;
+    :cost_.append(cost);
+  repeat while (epoch < 10)
+  
+  :log10(cost_) plotten auf ax[0];
+  :Achsenbeschriftung: Epochs, log(SSE);
+}
+
+partition "Training 2: eta = 0.0001" {
+  :AdalineGD(eta=0.0001, n_iter=10) initialisieren;
+  :Gewichte neu initialisieren;
+  :cost_ = [];
+  
+  repeat
+    :net_input, activation, errors berechnen;
+    :Gewichte aktualisieren (wie oben);
+    :cost speichern;
+  repeat while (epoch < 10)
+  
+  :cost_ plotten auf ax[1];
+  :Achsenbeschriftung: Epochs, SSE;
+}
+
+:Ordner 'images' erstellen (falls nicht vorhanden);
+:plt.savefig('images/02_11.png', dpi=300);
+:plt.show();
+
+stop
+@enduml
