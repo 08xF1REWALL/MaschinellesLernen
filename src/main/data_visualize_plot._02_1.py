@@ -7,7 +7,7 @@ import pandas as pd
 # Your Perceptron class (unchanged except small typo fix in name)
 # ────────────────────────────────────────────────────────────────
 
-class Perceptron(object):           # ← fixed typo: Preceptron → Perceptron
+class Perceptron(object):       
     def __init__(self, eta=0.01, n_iter=50, random_state=1):
         self.eta = eta # learning rate
         self.n_iter = n_iter # number of epochs
